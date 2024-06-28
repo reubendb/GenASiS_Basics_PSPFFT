@@ -1,7 +1,9 @@
 PATH_BASICS      = $(PATH_MODULES)/Basics
+PATH_PSPFFT      = $(PATH_MODULES)/PSPFFT
 
 include $(PATH_BASICS)/Makefile_Path
 
 VPATH_MODULES = \
   $(VPATH_BASICS):\
+  $(PATH_PSPFFT):\
   $(PATH_MODULES)

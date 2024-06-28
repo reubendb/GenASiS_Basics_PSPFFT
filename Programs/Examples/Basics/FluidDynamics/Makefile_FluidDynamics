@@ -20,7 +20,7 @@ FLUID = \
   ConservedFields_Template.o \
   DistributedMesh_Form.o
 
-SineWaveAdvection: Basics.a Fluid.a SineWaveAdvection.o
+SineWaveAdvection: Basics.a PSPFFT.a Fluid.a SineWaveAdvection.o
 	$(LINK) $(FLAGS) \
           -o SineWaveAdvection_$(MACHINE) \
           SineWaveAdvection.o SineWaveAdvection_Form.o \
@@ -49,9 +49,11 @@ clobber: clean
 	find . -type f $(FIND_EXEC) -name 'RiemannProblem_*' -exec rm -f '{}' \;
 
 include $(PATH_BASICS)/Makefile_Dependencies
+include $(PATH_PSPFFT)/Makefile_Dependencies
 
 DistributedMesh_Form.o: \
   Basics.o \
+  PSPFFT.o \
   DistributedMesh_Form.f90
 
 ConservedFields_Template.o: \
