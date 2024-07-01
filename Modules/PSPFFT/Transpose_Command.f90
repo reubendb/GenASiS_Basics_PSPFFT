@@ -22,14 +22,14 @@ contains
                
     type(CommunicatorForm), intent(in) :: &
       C
-    logical(KL), intent(in) :: &
+    logical(KDL), intent(in) :: &
       Forward
-    complex(KC), dimension(:,:,:), intent(in) :: &
+    complex(KDC), dimension(:,:,:), intent(in) :: &
       SourcePillar
-    complex(KC), dimension(:,:,:), allocatable :: &
+    complex(KDC), dimension(:,:,:), allocatable :: &
       TargetPillar
       
-    integer(KI) :: &
+    integer(KDI) :: &
       iRank, &
       iDatum, jData, kData, &
       iBuffer, &
@@ -40,9 +40,9 @@ contains
       oLine, &
       ChunkSize, &
       HeightFactor
-    integer(KI), dimension(3) :: &
+    integer(KDI), dimension(3) :: &
       SourceShape, TargetShape
-    complex(KC), dimension(:), allocatable :: &
+    complex(KDC), dimension(:), allocatable :: &
       SendBuffer, &
       ReceiveBuffer
     
