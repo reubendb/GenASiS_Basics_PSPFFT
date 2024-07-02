@@ -4,6 +4,7 @@ VPATH_PSPFFT = \
 PSPFFT = \
   Transpose_Command.o \
   FFT_FFTW__Base.o \
+  LaplacianIsolated_FFT__Form.o \
   PSPFFT.o
   #Multiply_Command.o \
   #LaplacianIsolated_FFT__Form.o \

@@ -10,12 +10,12 @@ FFT_FFTW__Base.o: \
   Basics.o \
   FFT_FFTW__Base.f90
 
-#LaplacianIsolated_FFT__Form.o: \
-#  Basics.o \
-#  Transpose_Command.o \
-#  FFT_FFTW__Base.o \
-#  LaplacianIsolated_FFT__Form.f90
-#
+LaplacianIsolated_FFT__Form.o: \
+  Basics.o \
+  Transpose_Command.o \
+  FFT_FFTW__Base.o \
+  LaplacianIsolated_FFT__Form.f90
+
 #PoissonEquations_FFT__Form.o: \
 #  Basics.o \
 #  Multiply_Command.o \
@@ -27,6 +27,7 @@ FFT_FFTW__Base.o: \
 PSPFFT.o: \
   Transpose_Command.o \
   FFT_FFTW__Base.o \
+  LaplacianIsolated_FFT__Form.o \
   PSPFFT.f90
 #  Multiply_Command.o \
 #  FFT_FFTW__Base.o \
