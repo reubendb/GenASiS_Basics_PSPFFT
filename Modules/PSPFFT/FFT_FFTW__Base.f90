@@ -16,22 +16,22 @@ module FFT_FFTW__Base
     Finalize
   
   type, public :: FFT_FFTW_Base
-    integer(KIB) :: &
+    integer(KBI) :: &
       FORWARD   = FFTW_FORWARD, &
       BACKWARD  = FFTW_BACKWARD, &
       Direction = 0, &
       Handle    = 0
-    integer(KI), dimension(:), allocatable :: &
+    integer(KDI), dimension(:), allocatable :: &
       nData
-    real(KR) :: &
-      Normalization = 1.0_KR
-    complex(KC), dimension(:), pointer :: &
+    real(KDR) :: &
+      Normalization = 1.0_KDR
+    complex(KDC), dimension(:), pointer :: &
       Data_1D => null()
-    complex(KC), dimension(:,:), pointer :: &
+    complex(KDC), dimension(:,:), pointer :: &
       Data_2D => null()
-    complex(KC), dimension(:,:,:), pointer :: &
+    complex(KDC), dimension(:,:,:), pointer :: &
       Data_3D => null()
-    logical(KL) :: &
+    logical(KDL) :: &
       LocalDataStorage = .false.
   end type FFT_FFTW_Base
   
@@ -62,15 +62,15 @@ contains
 
     type(FFT_FFTW_Base), intent(inout) :: &
       FFT_FFTW
-    integer(KIB) :: &
+    integer(KBI) :: &
       Direction
-    complex(KC), dimension(:,:,:), intent(in), target, optional :: &
+    complex(KDC), dimension(:,:,:), intent(in), target, optional :: &
       Data_3D_Option
-    complex(KC), dimension(:,:), intent(in), target, optional :: &
+    complex(KDC), dimension(:,:), intent(in), target, optional :: &
       Data_2D_Option
-    complex(KC), dimension(:), intent(in), target, optional :: &
+    complex(KDC), dimension(:), intent(in), target, optional :: &
       Data_1D_Option
-    integer(KI), dimension(:), intent(in), optional :: &
+    integer(KDI), dimension(:), intent(in), optional :: &
       DataShapeOption
     integer, intent(in), optional :: &
       nDataOption
@@ -94,15 +94,15 @@ contains
     type(FFT_FFTW_Base), intent(inout) :: &
       FFT_FFTW
     
-    if(kind((1.0_KC,1.0_KC)) == kind((1.0,1.0)))then
+    if(kind((1.0_KDC,1.0_KDC)) == kind((1.0,1.0)))then
       call SFFTW_EXECUTE(FFT_FFTW%Handle)
-    elseif(kind((1.0_KC,1.0_KC)) == kind((1.0d0,1.0d0)))then
+    elseif(kind((1.0_KDC,1.0_KDC)) == kind((1.0d0,1.0d0)))then
       call DFFTW_EXECUTE(FFT_FFTW%Handle)
     else
       !-- Long double not implemented
     end if
 
-    FFT_FFTW%Normalization = sqrt(product(1.0_KR/FFT_FFTW%nData))
+    FFT_FFTW%Normalization = sqrt(product(1.0_KDR/FFT_FFTW%nData))
 
   end subroutine Compute_FFT_FFTW
   
@@ -114,9 +114,9 @@ contains
     type(FFT_FFTW_Base), intent(inout) :: &
       FFT_FFTW
     
-    if(KC == kind((1.0,1.0)))then
+    if(KDC == kind((1.0,1.0)))then
       call SFFTW_DESTROY_PLAN(FFT_FFTW%Handle)
-    else if(KC == kind((1.0d0,1.0d0)))then
+    else if(KDC == kind((1.0d0,1.0d0)))then
       call DFFTW_DESTROY_PLAN(FFT_FFTW%Handle)
     else
       !-- Long double not implemented
@@ -158,14 +158,14 @@ contains
     
     type(FFT_FFTW_Base), intent(inout) :: &
       FFT_FFTW
-    integer(KIB) :: &
+    integer(KBI) :: &
       Direction
-    complex(KC), dimension(:), intent(in), target, optional :: &
+    complex(KDC), dimension(:), intent(in), target, optional :: &
       Data_1D_Option
     integer, intent(in), optional :: &
       nDataOption
     
-    complex(KC), dimension(:), pointer :: &
+    complex(KDC), dimension(:), pointer :: &
       DataHead
 
     FFT_FFTW%Direction = Direction
@@ -210,26 +210,26 @@ contains
 
     type(FFT_FFTW_Base), intent(inout) :: &
       FFT_FFTW
-    integer(KIB), intent(in) :: &
+    integer(KBI), intent(in) :: &
       Direction
-    complex(KC), dimension(:,:,:), intent(in), target, optional :: &
+    complex(KDC), dimension(:,:,:), intent(in), target, optional :: &
       Data_3D_Option
-    complex(KC), dimension(:,:), intent(in), target, optional :: &
+    complex(KDC), dimension(:,:), intent(in), target, optional :: &
       Data_2D_Option
-    integer(KI), dimension(:), intent(in), optional :: &
+    integer(KDI), dimension(:), intent(in), optional :: &
       DataShapeOption
     
-    integer(KI), parameter :: &
+    integer(KDI), parameter :: &
       N_TRANSFORM_DIMENSIONS = 1, &
       STRIDE = 1
-    integer(KI) :: &
+    integer(KDI) :: &
       nTransforms
-    integer(KI), dimension(N_TRANSFORM_DIMENSIONS) :: &
+    integer(KDI), dimension(N_TRANSFORM_DIMENSIONS) :: &
       nElementsPerTransform, &
       nElements
-    integer(KI), dimension(:), allocatable :: &
+    integer(KDI), dimension(:), allocatable :: &
       DataShape
-    complex(KC), dimension(:), pointer :: &
+    complex(KDC), dimension(:), pointer :: &
       DataHead
     
     FFT_FFTW%Direction = Direction

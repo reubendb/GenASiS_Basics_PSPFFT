@@ -3,9 +3,9 @@ VPATH_PSPFFT = \
 
 PSPFFT = \
   Transpose_Command.o \
+  FFT_FFTW__Base.o \
   PSPFFT.o
   #Multiply_Command.o \
-  #FFT_FFTW__Base.o \
   #LaplacianIsolated_FFT__Form.o \
   #PoissonEquations_FFT__Form.o \
  
