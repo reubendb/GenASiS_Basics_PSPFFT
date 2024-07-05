@@ -25,7 +25,7 @@ module LaplacianIsolated_FFT__Form
       PillarWidth, PillarHeight
     complex(KDC), dimension(:,:,:), allocatable :: &
       GreensFunction_Z
-    type(ArrayReal_3D_Base), dimension(:), pointer :: &
+    type(Real_3D_Form), dimension(:), pointer :: &
       InputOutput
     type(CommunicatorForm), pointer :: &
       Communicator_X, Communicator_XY, Communicator_YZ
@@ -90,20 +90,20 @@ contains
     if(any(mod(L%nCellsBrick, nRanksRoot) /= 0))then
       call Show( &
              'FFT requires that brick widths be divisible by nRanksRoot', &
-             IgnorabilityOption = CONSOLE_ERROR)
+             IgnorabilityOption = CONSOLE % ERROR)
       call Show( & 
              L%nCellsBrick(1), 'brick width 1', &
-             IgnorabilityOption = CONSOLE_ERROR)
+             IgnorabilityOption = CONSOLE % ERROR)
       call Show( & 
              L%nCellsBrick(2), 'brick width 2', &
-             IgnorabilityOption = CONSOLE_ERROR)
+             IgnorabilityOption = CONSOLE % ERROR)
       call Show( & 
              L%nCellsBrick(3), 'brick width 3', &
-             IgnorabilityOption = CONSOLE_ERROR)
+             IgnorabilityOption = CONSOLE % ERROR)
       call Show( &
              nRanksRoot, 'nRanksRoot', &
-             IgnorabilityOption = CONSOLE_ERROR)
-      call Abort(C)
+             IgnorabilityOption = CONSOLE % ERROR)
+      call Abort()
     end if
     
     do iDim = 1, 3
