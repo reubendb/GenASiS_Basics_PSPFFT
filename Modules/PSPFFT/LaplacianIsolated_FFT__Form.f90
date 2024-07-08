@@ -20,16 +20,16 @@ module LaplacianIsolated_FFT__Form
     Destroy
   
   type, public :: LaplacianIsolated_FFT_Form
-    integer(KDI), dimension(3) :: &
+    integer ( KDI ), dimension ( 3 ) :: &
       nCellsBrick, &
       PillarWidth, PillarHeight
-    complex(KDC), dimension(:,:,:), allocatable :: &
+    complex ( KDC ), dimension ( :, :, : ), allocatable :: &
       GreensFunction_Z
-    type(Real_3D_Form), dimension(:), pointer :: &
+    type ( Real_3D_Form ), dimension ( : ), pointer :: &
       InputOutput
-    type(CommunicatorForm), pointer :: &
+    type ( CommunicatorForm ), pointer :: &
       Communicator_X, Communicator_XY, Communicator_YZ
-    type(FFT_Base), dimension(3) :: &
+    type ( FFT_Base ), dimension ( 3 ) :: &
       FFT_Forward, FFT_Backward
   end type LaplacianIsolated_FFT_Form
   
@@ -61,33 +61,33 @@ module LaplacianIsolated_FFT__Form
 contains
 
   
-  subroutine Create_L(L, C, CellWidth, nCells)
+  subroutine Create_L ( L, C, CellWidth, nCells )
   
     !-- Setup and allocate the "pillars" data storage (see manuscript about 
     !   pillars ).
   
-    type(LaplacianIsolated_FFT_Form), pointer :: &
+    type ( LaplacianIsolated_FFT_Form ), pointer :: &
       L
-    type(CommunicatorForm), intent(in) :: &
+    type ( CommunicatorForm ), intent ( in ) :: &
       C
-    real(KDR), dimension(3), intent(in) :: &
+    real ( KDR ), dimension ( 3 ), intent ( in ) :: &
       CellWidth
-    integer(KDI), dimension(3), intent(in) :: &
+    integer ( KDI ), dimension ( 3 ), intent ( in ) :: &
       nCells
       
-    integer(KDI) :: &
+    integer ( KDI ) :: &
       iDim, jDim, kDim, &
       nRanksRoot
-    integer(KDI), dimension(3) :: &
+    integer ( KDI ), dimension ( 3 ) :: &
       PW, PH, &
       Factor
     
-    allocate(L)
+    allocate ( L )
     
-    nRanksRoot = C%Size**(1.0_KDR/3) + 0.5_KDR
-    L%nCellsBrick = nCells / nRanksRoot
+    nRanksRoot = C % Size ** ( 1.0_KDR / 3 ) + 0.5_KDR
+    L % nCellsBrick = nCells / nRanksRoot
     
-    if(any(mod(L%nCellsBrick, nRanksRoot) /= 0))then
+    if (any(mod(L%nCellsBrick, nRanksRoot) /= 0))then
       call Show( &
              'FFT requires that brick widths be divisible by nRanksRoot', &
              IgnorabilityOption = CONSOLE % ERROR)
@@ -97,21 +97,21 @@ contains
       call Show( & 
              L%nCellsBrick(2), 'brick width 2', &
              IgnorabilityOption = CONSOLE % ERROR)
-      call Show( & 
-             L%nCellsBrick(3), 'brick width 3', &
-             IgnorabilityOption = CONSOLE % ERROR)
-      call Show( &
+      call Show ( & 
+             L % nCellsBrick ( 3 ), 'brick width 3', &
+             IgnorabilityOption = CONSOLE % ERROR )
+      call Show ( &
              nRanksRoot, 'nRanksRoot', &
-             IgnorabilityOption = CONSOLE % ERROR)
-      call Abort()
+             IgnorabilityOption = CONSOLE % ERROR )
+      call Abort( )
     end if
     
     do iDim = 1, 3
-      jDim = mod(iDim, 3) + 1
-      kDim = mod(jDim, 3) + 1
-      if(mod(iDim, 2) == 1)then
-        L%PillarWidth(iDim) = L%nCellsBrick(jDim) / nRanksRoot
-        L%PillarHeight(iDim) = L%nCellsBrick(kDim)
+      jDim = mod ( iDim, 3) + 1
+      kDim = mod ( jDim, 3) + 1
+      if(mod ( iDim, 2 ) == 1 )then
+        L % PillarWidth ( iDim ) = L % nCellsBrick ( jDim ) / nRanksRoot
+        L % PillarHeight ( iDim ) = L % nCellsBrick ( kDim )
       else
         L%PillarWidth(iDim) = L%nCellsBrick(jDim) 
         L%PillarHeight(iDim) = L%nCellsBrick(kDim) / nRanksRoot
@@ -147,10 +147,10 @@ contains
 
     !-- Distribute the source, in bricks, to x pillars
 
-    type(LaplacianIsolated_FFT_Form), intent(inout) :: &
+    type ( LaplacianIsolated_FFT_Form ), intent ( inout ) :: &
       L
     
-    integer(KDI) :: &
+    integer( KDI ) :: &
       iRank, &
       iSource, &
       oData, &
@@ -158,21 +158,21 @@ contains
       nSources, &
       nData, &
       ChunkSize
-    real(KDR), dimension(:), allocatable :: &
+    real( KDR ), dimension(:), allocatable :: &
       SendBuffer, &
       ReceiveBuffer
-    type(CommunicatorForm), pointer :: &
+    type( CommunicatorForm ), pointer :: &
       C
     
-    C => L%Communicator_X  
+    C => L % Communicator_X  
     
-    nSources = size(L%InputOutput)
+    nSources = size( L % InputOutput )
 
     if(nSources > 1) stop    
     
     nData = 0
     do iSource = 1, nSources
-      nData = nData + size(L%InputOutput(iSource)%Data)
+      nData = nData + size(L%InputOutput(iSource)%Value)
     end do
     allocate(SendBuffer(nData))
     allocate(ReceiveBuffer(nData))
@@ -190,7 +190,7 @@ contains
         SendBuffer(oBuffer+1:oBuffer+ChunkSize/nSources) &
           = reshape( &
               L%InputOutput(iSource) &
-                %Data(:,oData+1:oData+L%nCellsBrick(2)/C%Size,:), &
+                %Value(:,oData+1:oData+L%nCellsBrick(2)/C%Size,:), &
               (/ ChunkSize / nSources /))
         oBuffer = oBuffer + ChunkSize / nSources
       end do
@@ -245,7 +245,7 @@ contains
     
     nData = 0
     do iSolution = 1, nSolutions
-      nData = nData + size(L%InputOutput(iSolution)%Data)
+      nData = nData + size(L%InputOutput(iSolution)%Value)
     end do
     allocate(SendBuffer(nData))
     allocate(ReceiveBuffer(nData))
@@ -272,7 +272,7 @@ contains
       oData = iRank * L%nCellsBrick(2) / C%Size 
       do iSolution = 1, nSolutions
         L%InputOutput(iSolution) &
-          %Data(:,oData+1:oData+L%nCellsBrick(2)/C%Size,:) &
+          %Value(:,oData+1:oData+L%nCellsBrick(2)/C%Size,:) &
             = reshape( &
                 ReceiveBuffer(oBuffer+1:oBuffer+ChunkSize/nSolutions), &
                 (/L%nCellsBrick(1), L%PillarWidth(1), L%nCellsBrick(3)/))
