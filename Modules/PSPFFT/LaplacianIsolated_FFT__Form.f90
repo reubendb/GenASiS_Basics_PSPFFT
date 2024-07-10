@@ -441,7 +441,7 @@ contains
            RankPosition_Y)
     call ComputeGreensFunction_Z(L, FFT_XYI_Y, nCells, RankPosition_Z)
 
-   ! call Copy(L%FFT_Forward(3)%Data_3D, L%GreensFunction_Z)
+    call Copy(L%FFT_Forward(3)%Data_3D, L%GreensFunction_Z)
     
     call Finalize(FFT_XYI_Y)
     call Finalize(FFT_XII_X)

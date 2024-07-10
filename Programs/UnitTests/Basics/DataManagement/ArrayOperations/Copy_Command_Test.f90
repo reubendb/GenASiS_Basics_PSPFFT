@@ -320,6 +320,8 @@ program Copy_Command_Test
   print *
   print *
   
+  !-- FIXME: Add test for Complex_ED
+  
   return
   !-- Real section
 

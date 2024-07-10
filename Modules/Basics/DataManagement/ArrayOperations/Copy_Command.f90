@@ -41,7 +41,7 @@ module Copy_Command
     module procedure CopyReal_1D_3D
     module procedure CopyComplex_1D
 !     module procedure CopyComplex_2D
-!     module procedure CopyComplex_3D
+    module procedure CopyComplex_3D
 !     module procedure CopyComplex_1D_Section
 !     module procedure CopyComplex_2D_Section
 !     module procedure CopyComplex_3D_Section
@@ -690,18 +690,20 @@ contains
   ! end subroutine CopyComplex_2D
   
   
-  ! subroutine CopyComplex_3D ( A, B )
+  subroutine CopyComplex_3D ( A, B )
 
-  !   complex ( KDC ), dimension ( :, :, : ), intent ( in ) :: &
-  !     A
-  !   complex ( KDC ), dimension ( :, :, : ), intent ( out ) :: &
-  !     B
+    complex ( KDC ), dimension ( :, :, : ), intent ( in ) :: &
+      A
+    complex ( KDC ), dimension ( :, :, : ), intent ( out ) :: &
+      B
 
-  !   !$OMP parallel workshare
-  !   B = A
-  !   !$OMP end parallel workshare
+    !-- FIXME: Need GPU version with offload
+    
+    !$OMP parallel workshare
+    B = A
+    !$OMP end parallel workshare
 
-  ! end subroutine CopyComplex_3D
+  end subroutine CopyComplex_3D
   
   
   ! subroutine CopyComplex_1D_Section ( A, oSource, oTarget, nValues, B )
