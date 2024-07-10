@@ -41,7 +41,7 @@ module LaplacianIsolated_FFT__Form
        Communicator
      type ( CommunicatorForm ), intent ( in ), optional :: &
        C_Option
-     character ( * ), dimension ( : ), intent ( in ), optional  :: &
+     character ( * ), intent ( in ), optional  :: &
        NameOption
      integer(KDI), dimension(:), allocatable, optional :: &
       RanksOption   
@@ -130,14 +130,14 @@ contains
         L % PillarWidth ( iDim ) = L % nCellsBrick ( jDim ) / nRanksRoot
         L % PillarHeight ( iDim ) = L % nCellsBrick ( kDim )
       else
-        L%PillarWidth(iDim) = L%nCellsBrick(jDim) 
-        L%PillarHeight(iDim) = L%nCellsBrick(kDim) / nRanksRoot
+        L % PillarWidth ( iDim ) = L % nCellsBrick ( jDim ) 
+        L % PillarHeight ( iDim ) = L % nCellsBrick ( kDim ) / nRanksRoot
       end if
     end do
-    PW = L%PillarWidth
-    PH = L%PillarHeight
+    PW = L % PillarWidth
+    PH = L % PillarHeight
     
-    allocate(L%GreensFunction_Z(2*nCells(3),2*PW(3),2*PH(3)))
+    allocate ( L % GreensFunction_Z (2*nCells(3), 2*PW(3), 2*PH(3)))
 
     call CreateCommunicators ( L, C, nCells, nRanksRoot )
 
@@ -414,12 +414,12 @@ contains
     !   three-dimensions. The last letter indicates the direction of the 
     !   pillar (i.e. X, Y, or Z).
     
-    PW = L%PillarWidth
-    PH = L%PillarHeight
+    PW = L % PillarWidth
+    PH = L % PillarHeight
     
-    call Initialize( &
-           FFT_XIA_X, FFT_XIA_X%FORWARD, &
-           DataShapeOption = (/2*nCells(1),1,PH(1)/) )
+    call Initialize ( &
+           FFT_XIA_X, FFT_XIA_X % FORWARD, &
+           DataShapeOption = (/2*nCells ( 1 ), 1, PH ( 1 )/) )
     call Initialize( &
            FFT_XAI_X, FFT_XAI_X%FORWARD, &
            DataShapeOption = (/2*nCells(1),PW(1),1/) )
@@ -441,7 +441,7 @@ contains
            RankPosition_Y)
     call ComputeGreensFunction_Z(L, FFT_XYI_Y, nCells, RankPosition_Z)
 
-    call Copy(L%FFT_Forward(3)%Data_3D, L%GreensFunction_Z)
+   ! call Copy(L%FFT_Forward(3)%Data_3D, L%GreensFunction_Z)
     
     call Finalize(FFT_XYI_Y)
     call Finalize(FFT_XII_X)
