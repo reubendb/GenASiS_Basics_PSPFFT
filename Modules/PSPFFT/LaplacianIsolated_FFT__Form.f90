@@ -33,22 +33,61 @@ module LaplacianIsolated_FFT__Form
       FFT_Forward, FFT_Backward
   end type LaplacianIsolated_FFT_Form
   
-  interface Create
-    module procedure Create_L
-  end interface Create
+!  interface Create
+!    module procedure Create_L
+!   end interface Create
   
-  interface Load
-    module procedure Load_L
-  end interface Load
+!  interface Load
+!    module procedure Load_L
+!  end interface Load
   
-  interface Store
-    module procedure Store_L
-  end interface Store
+!  interface Store
+!    module procedure Store_L
+!  end interface Store
   
-  interface Destroy
-    module procedure Destroy_L
-  end interface Destroy
+!  interface Destroy
+!    module subroutine Destroy_L ( L )
+      !implicit none
+!      type(LaplacianIsolated_FFT_Form), pointer :: &
+!        L  
+!      integer(KDI) :: &
+!        iDim
+!    end subroutine Destroy_L
+!  end interface Destroy
   
+ interface
+
+   module subroutine Create ( Communicator, C_Option, NameOption, RanksOption )
+    implicit none
+     type ( CommunicatorForm ), intent ( in ) :: &
+       Communicator
+     type ( CommunicatorForm ), intent ( in ), optional :: &
+       C_Option
+     character ( * ), dimension ( : ), intent ( in ), optional  :: &
+       NameOption
+     integer(KDI), dimension(:), allocatable, optional :: &
+      RanksOption   
+   end subroutine Create
+
+   module subroutine Load ( L )
+    implicit none
+     type ( LaplacianIsolated_FFT_Form ), pointer :: &
+       L
+   end subroutine Load
+
+   module subroutine Store ( L )
+    implicit none
+     type ( LaplacianIsolated_FFT_Form ), pointer :: &
+       L
+   end subroutine Store
+ 
+   module subroutine Destroy ( Communicator ) 
+     implicit none
+     type ( CommunicatorForm ), intent ( in ) :: &
+       Communicator
+   end subroutine
+ end interface
+
     private :: &
       CreateCommunicators, &
       ComputeGreensFunction
@@ -103,7 +142,7 @@ contains
       call Show ( &
              nRanksRoot, 'nRanksRoot', &
              IgnorabilityOption = CONSOLE % ERROR )
-      call Abort( )
+      call Abort ( )
     end if
     
     do iDim = 1, 3
@@ -122,7 +161,7 @@ contains
     
     allocate(L%GreensFunction_Z(2*nCells(3),2*PW(3),2*PH(3)))
 
-    call CreateCommunicators(L, C, nCells, nRanksRoot)
+    call CreateCommunicators ( L, C, nCells, nRanksRoot )
 
     Factor = 1
     do iDim = 1, 3
@@ -150,7 +189,7 @@ contains
     type ( LaplacianIsolated_FFT_Form ), intent ( inout ) :: &
       L
     
-    integer( KDI ) :: &
+    integer ( KDI ) :: &
       iRank, &
       iSource, &
       oData, &
@@ -158,10 +197,10 @@ contains
       nSources, &
       nData, &
       ChunkSize
-    real( KDR ), dimension(:), allocatable :: &
+    real ( KDR ), dimension ( : ), allocatable :: &
       SendBuffer, &
       ReceiveBuffer
-    type( CommunicatorForm ), pointer :: &
+    type ( CommunicatorForm ), pointer :: &
       C
     
     C => L % Communicator_X  
@@ -216,14 +255,14 @@ contains
   end subroutine Load_L
   
   
-  subroutine Store_L(L)
+  subroutine Store_L( L )
   
     !-- Distribute the solution, in x pillars, to bricks
 
-    type(LaplacianIsolated_FFT_Form), intent(inout) :: &
+    type ( LaplacianIsolated_FFT_Form ), intent ( inout ) :: &
       L
     
-    integer(KDI) :: &
+    integer ( KDI ) :: &
       iRank, &
       iSolution, &
       oData, &
@@ -231,10 +270,10 @@ contains
       nSolutions, &
       nData, &
       ChunkSize
-    real(KDR), dimension(:), allocatable :: &
+    real ( KDR ), dimension ( : ), allocatable :: &
       SendBuffer, &
       ReceiveBuffer
-    type(CommunicatorForm), pointer :: &
+    type ( CommunicatorForm ), pointer :: &
       C
     
     C => L%Communicator_X  
@@ -347,7 +386,7 @@ contains
     Pillar_X_Rank &
       = (/(iRank, iRank = (Pillar_X-1)*nRanksRoot, Pillar_X*nRanksRoot - 1)/)
     call Create( &
-           L%Communicator_X, NameOption='Pillar_X', C_Option=C, &
+           L%Communicator_X, C_Option=C, NameOption='Pillar_X', &
            RanksOption=Pillar_X_Rank)
     deallocate(Pillar_X_Rank)
     
@@ -362,10 +401,10 @@ contains
            iRank = (Slab_XY-1)*nRanksPerSlab_XY,Slab_XY*nRanksPerSlab_XY - 1)/)
     Slab_YZ_Rank = (/(iRank, iRank = Slab_YZ-1, C%Size-1, nRanksPerSlab_XY)/)
     call Create( &
-           L%Communicator_XY, NameOption='Slab_XY', C_Option=C, &
+           L%Communicator_XY, C_Option=C, NameOption='Slab_XY', &
            RanksOption=Slab_XY_Rank)
     call Create( &
-           L%Communicator_YZ, NameOption='Slab_YZ', C_Option=C, &
+           L%Communicator_YZ, C_Option=C, NameOption='Slab_YZ', &
            RanksOption=Slab_YZ_Rank)
     deallocate(Slab_YZ_Rank)
     deallocate(Slab_XY_Rank)
