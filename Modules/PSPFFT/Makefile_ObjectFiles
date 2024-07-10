@@ -2,11 +2,11 @@ VPATH_PSPFFT = \
   $(PATH_PSPFFT)
 
 PSPFFT = \
+  Multiply_Command.o \
   Transpose_Command.o \
   FFT_FFTW__Base.o \
   LaplacianIsolated_FFT__Form.o \
   PSPFFT.o
-  #Multiply_Command.o \
   #LaplacianIsolated_FFT__Form.o \
   #PoissonEquations_FFT__Form.o \
  

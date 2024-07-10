@@ -1,6 +1,6 @@
-#Multiply_Command.o: \
-#  Basics.o \
-#  Multiply_Command.f90
+Multiply_Command.o: \
+  Basics.o \
+  Multiply_Command.f90
 
 Transpose_Command.o: \
   Basics.o \
@@ -25,13 +25,11 @@ LaplacianIsolated_FFT__Form.o: \
 #  PoissonEquations_FFT__Form.f90
 #
 PSPFFT.o: \
+	Multiply_Command.o \
   Transpose_Command.o \
   FFT_FFTW__Base.o \
   LaplacianIsolated_FFT__Form.o \
   PSPFFT.f90
-#  Multiply_Command.o \
-#  FFT_FFTW__Base.o \
-#  LaplacianIsolated_FFT__Form.o \
 #  PoissonEquations_FFT__Form.o \
 #  PSPFFT.f90
 
