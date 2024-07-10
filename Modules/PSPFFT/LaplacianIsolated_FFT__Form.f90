@@ -33,28 +33,6 @@ module LaplacianIsolated_FFT__Form
       FFT_Forward, FFT_Backward
   end type LaplacianIsolated_FFT_Form
   
-!  interface Create
-!    module procedure Create_L
-!   end interface Create
-  
-!  interface Load
-!    module procedure Load_L
-!  end interface Load
-  
-!  interface Store
-!    module procedure Store_L
-!  end interface Store
-  
-!  interface Destroy
-!    module subroutine Destroy_L ( L )
-      !implicit none
-!      type(LaplacianIsolated_FFT_Form), pointer :: &
-!        L  
-!      integer(KDI) :: &
-!        iDim
-!    end subroutine Destroy_L
-!  end interface Destroy
-  
  interface
 
    module subroutine Create ( Communicator, C_Option, NameOption, RanksOption )
