@@ -33,9 +33,9 @@ module LaplacianIsolated_FFT__Form
       FFT_Forward, FFT_Backward
   end type LaplacianIsolated_FFT_Form
   
- interface
+ interface Create 
 
-   module subroutine Create ( Communicator, C_Option, NameOption, RanksOption )
+   module subroutine Create_Comm ( Communicator, C_Option, NameOption, RanksOption )
     implicit none
      type ( CommunicatorForm ), intent ( in ) :: &
        Communicator
@@ -43,28 +43,29 @@ module LaplacianIsolated_FFT__Form
        C_Option
      character ( * ), intent ( in ), optional  :: &
        NameOption
-     integer(KDI), dimension(:), allocatable, optional :: &
+     integer ( KDI ), dimension(:), allocatable, optional :: &
       RanksOption   
-   end subroutine Create
+   end subroutine Create_Comm
 
-   module subroutine Load ( L )
-    implicit none
-     type ( LaplacianIsolated_FFT_Form ), pointer :: &
-       L
-   end subroutine Load
-
-   module subroutine Store ( L )
-    implicit none
-     type ( LaplacianIsolated_FFT_Form ), pointer :: &
-       L
-   end subroutine Store
+ end interface Create
  
-   module subroutine Destroy ( Communicator ) 
+ interface Load 
+   module procedure Load_L
+ end interface Load
+
+ interface Store 
+   module procedure Store_L  
+ end interface Store
+ 
+interface Destroy
+  module subroutine Destroy_C ( Communicator, DestroyHandleOption ) 
      implicit none
      type ( CommunicatorForm ), intent ( in ) :: &
        Communicator
-   end subroutine
- end interface
+     logical ( KDL ), intent ( in ), optional :: &
+       DestroyHandleOption
+  end subroutine Destroy_C
+end interface Destroy
 
     private :: &
       CreateCommunicators, &
