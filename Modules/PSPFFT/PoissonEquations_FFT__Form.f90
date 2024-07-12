@@ -92,7 +92,7 @@ contains
       nCells
     integer ( KDI ), intent ( in ) :: &
       MPI_COMM
-    character ( LDL ), intent ( in ), optional :: &
+    character ( * ), intent ( in ), optional :: &
       VerbosityOption
   
     character ( LDL ) :: &
@@ -101,11 +101,11 @@ contains
     allocate ( PE )
     call Create ( PE % Communicator, MPI_COMM, 'PSPFFT_Communicator' )
     
-    Verbosity = CONSOLE % INFO_1
+    Verbosity = 'INFO_1'
     if ( present ( VerbosityOption ) ) Verbosity = VerbosityOption
-    CONSOLE % DisplayRank = 0
-    CONSOLE % Verbosity = Verbosity
-    CONSOLE % ProcessRank = PE % Communicator % Rank
+    call CONSOLE % SetDisplayRank ( 0 )
+    call CONSOLE % SetVerbosity ( Verbosity )
+    call CONSOLE % Initialize ( ProcessRank = PE % Communicator % Rank )
     
     call Create ( PE % Laplacian, PE % Communicator, CellWidth, nCells )
     
