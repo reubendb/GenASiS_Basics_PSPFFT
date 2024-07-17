@@ -1,0 +1,8 @@
+VPATH_IO = \
+	$(PATH_IO)
+
+IO = \
+  SiloWrappers.o \
+  InputOutputStreamSilo_Form.o \
+  QuadMeshSilo_Form.o \
+  IO.o

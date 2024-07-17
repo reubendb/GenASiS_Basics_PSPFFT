@@ -1,0 +1,18 @@
+SiloWrappers.o: \
+  SiloWrappers.h \
+  SiloWrappers.c
+
+InputOutputStreamSilo_Form.o: \
+  InputOutputStreamSilo_Form.f90
+
+QuadMeshSilo_Form.o: \
+  InputOutputStreamSilo_Form.o \
+  QuadMeshSilo_Form.f90
+
+IO.o: \
+  InputOutputStreamSilo_Form.o \
+  QuadMeshSilo_Form.o \
+  IO.f90
+
+IO.a: $(IO)
+	ar r IO.a $(IO)
