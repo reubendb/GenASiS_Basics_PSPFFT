@@ -1,5 +1,6 @@
 program HomogeneousSpheroid_3D_Program
-
+ 
+  use Basics
   use PSPFFT
   use IO
   
@@ -7,32 +8,32 @@ program HomogeneousSpheroid_3D_Program
   
   include 'mpif.h'
 
-  integer :: &
+  integer (KDI) :: &
     Error, &
     nProcs, &
     nProcsRoot
-  integer, dimension(3) :: &
+  integer (KDI), dimension(3) :: &
     nTotalCells
-  real(KR) :: &
+  real(KDR) :: &
     Pi, &
-    GravitationalConstant = 1.0_KR, &
+    GravitationalConstant = 1.0_KDR, &
     MyAnalyticalSum, MyDifferenceSum, &
     AnalyticalSum, DifferenceSum, &
     L1_Norm
-  real(KR), dimension(3) :: &
+  real(KDR), dimension(3) :: &
     CellWidth
   character(2) :: &
     nProcsString
-  character(LL), dimension(3) :: &
+  character(LDL), dimension(3) :: &
     VariableName
-  character(LF) :: &
+  character(LDF) :: &
     DataDirectory
   type(IO_Form), pointer :: &
     FileRead, &
     FileWrite
   type(QuadMeshForm), pointer :: &
     Mesh
-  type(ArrayReal_3D_Base), dimension(3) :: &
+  type(Real_3D_Form), dimension(3) :: &
     AR
   type(VariableArrayReal_3D_GroupBase), dimension(1) :: &
     VAR
@@ -43,7 +44,7 @@ program HomogeneousSpheroid_3D_Program
   
   call MPI_COMM_SIZE(MPI_COMM_WORLD, nProcs, Error)
   write(nProcsString, fmt='(i2)') nProcs
-  nProcsRoot = nProcs**(1.0_KR/3) + 0.5_KR
+  nProcsRoot = nProcs**(1.0_KDR/3) + 0.5_KDR
   DataDirectory = 'Data/Data_'//trim(adjustl(nProcsString)) // 'proc/'
   
   VariableName = (/'Source                        ', &
@@ -51,7 +52,7 @@ program HomogeneousSpheroid_3D_Program
                    'NumericalSolution             '/)
   
   !-- VAR(1) uses AR as its storage, which at this point is unallocated 
-  call Initialize(VAR(1), AR, VariableOption = VariableName)
+  call Initialize ( VAR(1), AR, VariableOption = VariableName )
   
   !-- Create IO objects read data file from, and write the solution to
   call Create( &
@@ -79,9 +80,9 @@ program HomogeneousSpheroid_3D_Program
   !-- VAR(1)%Data(1)%Data is a rank 3 array with the index i,j,k
   !   gives the value of the source on mesh grid i,j,k
   
-  Pi = acos(-1.0_KR)
+  Pi = acos(-1.0_KDR)
   VAR(1)%Data(3)%Data &
-    = VAR(1)%Data(1)%Data * 4.0_KR * Pi * GravitationalConstant
+    = VAR(1)%Data(1)%Data * 4.0_KDR * Pi * GravitationalConstant
   
   !-- Create Poisson Solver Object
   CellWidth(1) = Mesh%NodeCoordinate_1(2) - Mesh%NodeCoordinate_1(1)
