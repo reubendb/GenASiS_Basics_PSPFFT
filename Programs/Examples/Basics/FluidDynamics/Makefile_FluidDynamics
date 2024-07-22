@@ -8,11 +8,11 @@ all: SineWaveAdvection SawtoothWaveAdvection RiemannProblem HomogeneousSpheroid_
 
 include $(PATH_GENASIS)/Build/Makefile_Build
 
-IO = \
-	SiloWrappers.o \
-	InputOutputStreamSilo_Form.o \
-	QuadMeshSilo_Form.o \
-  IO.o
+#IO = \
+#	SiloWrappers.o \
+#	InputOutputStreamSilo_Form.o \
+#	QuadMeshSilo_Form.o \
+#  IO.o
 
 FLUID = \
   HomogeneousSpheroid_3D_Program.o \
@@ -28,11 +28,11 @@ FLUID = \
   DistributedMesh_Form.o
 
 HomogeneousSpheroid_3D: \
-  Basics.a PSPFFT.a Fluid.a HomogeneousSpheroid_3D_Program.o $(IO)
+  Basics.a PSPFFT.a Fluid.a HomogeneousSpheroid_3D_Program.o #$(IO)
 	$(LINK) $(FLAGS) \
           -o HomogeneousSpheroid_3D_$(MACHINE) \
           HomogeneousSpheroid_3D_Program.o \
-          IO.a Fluid.a PSPFFT.a Basics.a $(LIBRARIES)
+          Fluid.a PSPFFT.a Basics.a $(LIBRARIES)
 
 SineWaveAdvection: Basics.a PSPFFT.a Fluid.a SineWaveAdvection.o
 	$(LINK) $(FLAGS) \
@@ -124,7 +124,7 @@ PolytropicFluid_Kernel.o: \
 
 HomogeneousSpheroid_3D_Program.o: \
   Basics.o \
-  IO.o \
+  #IO.o \
   HomogeneousSpheroid_3D_Program.f90
 
 Fluid.a: $(FLUID)
