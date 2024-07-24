@@ -46,11 +46,14 @@ contains
       SendBuffer, &
       ReceiveBuffer
     
+    type ( CollectiveOperation_C_Form ), pointer :: &
+      CO_C
     !-- Pillars have their full dimension as the first index so transpose
     !-- becomes a permutation
     
     SourceShape = shape(SourcePillar)
-    
+   
+    allocate ( CO_C ) 
     allocate(SendBuffer(size(SourcePillar)))
     allocate(ReceiveBuffer(size(SourcePillar)))
     
@@ -74,7 +77,10 @@ contains
       ChunkSize = product(TargetShape) / C%Size 
       HeightFactor = 2
     end if
-    
+     
+    call CO_C % Initialize &
+              ( C, nOutgoing = [ ChunkSize ], nIncoming = [ ChunkSize ] )
+
     do iRank = 0, C%Size-1
 
       !-- portion from "active" half of pillar
@@ -101,8 +107,11 @@ contains
             (/ ChunkSize / 2 /))
 
     end do
-  
-    call AllToAll(SendBuffer, C, ChunkSize, ReceiveBuffer)
+    
+    ! CO_C % Outgoing % Value & 
+    !    = spread ( SendBuffer, dim = 3, ncopies = ChunkSize )
+    call CO_C % AllToAll ( )  
+    ! call AllToAll(SendBuffer, C, ChunkSize, ReceiveBuffer)
     
     if(Forward)then
       iBuffer = 0
@@ -151,7 +160,8 @@ contains
     
     deallocate(SendBuffer)
     deallocate(ReceiveBuffer)
-    
+    !deallocate ( CO_R )
+
     !-- TargetPillar as result array is automatically deallocated 
     
   end function TransposeComplexDoublePillar

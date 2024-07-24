@@ -27,29 +27,7 @@ module PoissonEquations_FFT__Form
   end type PoissonEquations_FFT_Form
   
   interface Create 
-   
-    module subroutine Create_L ( Laplacian, Communicator, CellWidth, nCells )
-     implicit none 
-      type ( LaplacianForm ), pointer :: &
-        Laplacian
-      type ( CommunicatorForm ), pointer :: &
-        Communicator
-      real ( KDR ), dimension ( 3 ), intent ( in ) :: &
-        CellWidth
-      integer ( KDI ), dimension ( 3 ), intent ( in ) :: &
-      nCells
-    end subroutine
-  
-    module subroutine Create_C ( Communicator, MPI_COMM, CommunicatorName )
-     implicit none 
-      type ( CommunicatorForm ), pointer :: &
-        Communicator
-      integer ( KDI ), intent ( in ) :: &
-        MPI_COMM
-      character ( * ), intent ( in ) :: &
-        CommunicatorName
-    end subroutine
-  
+   module procedure Create_PE 
   end interface Create
   
   interface Solve
@@ -57,26 +35,8 @@ module PoissonEquations_FFT__Form
   end interface Solve
   
   interface Destroy
-   
-   module subroutine Destroy_L ( Laplacian, DestroyHandleOption )
-     implicit none 
-      type ( LaplacianForm ), pointer :: &
-        Laplacian
-      logical ( KDL ), intent ( in ), optional :: &
-        DestroyHandleOption
-    end subroutine
-  
-   end interface Destroy
-
- !interface
- 
-  !module subroutine Create ( ) 
- 
-   !type ( PoissonEquations_FFT_Form ), Po
-
-  !end subroutine
- 
- !end interface 
+   module procedure Destroy_PE 
+  end interface Destroy 
  
 contains
 
@@ -99,7 +59,8 @@ contains
       Verbosity
     
     allocate ( PE )
-    call Create ( PE % Communicator, MPI_COMM, 'PSPFFT_Communicator' )
+    call PE % Communicator % Initialize ( ) 
+    !call Create ( PE % Communicator, MPI_COMM, 'PSPFFT_Communicator' )
     
     Verbosity = 'INFO_1'
     if ( present ( VerbosityOption ) ) Verbosity = VerbosityOption
@@ -107,7 +68,7 @@ contains
     call CONSOLE % SetVerbosity ( Verbosity )
     call CONSOLE % Initialize ( ProcessRank = PE % Communicator % Rank )
     
-    call Create ( PE % Laplacian, PE % Communicator, CellWidth, nCells )
+   call Create ( PE % Laplacian, PE % Communicator, CellWidth, nCells )
     
   end subroutine Create_PE
   
@@ -184,8 +145,8 @@ contains
     type ( PoissonEquations_FFT_Form ), pointer :: &
       PE
     
-    call Destroy ( PE % Laplacian )
-    call Destroy ( PE % Communicator, DestroyHandleOption = .false. )
+    !deallocate ( PE % Laplacian )
+    !deallocate ( PE % Communicator )
     deallocate ( PE )
   
   end subroutine Destroy_PE

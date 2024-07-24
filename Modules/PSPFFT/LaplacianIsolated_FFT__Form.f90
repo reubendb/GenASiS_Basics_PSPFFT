@@ -34,18 +34,19 @@ module LaplacianIsolated_FFT__Form
   end type LaplacianIsolated_FFT_Form
   
  interface Create 
-
-   module subroutine Create_Comm ( Communicator, C_Option, NameOption, RanksOption )
-    implicit none
-     type ( CommunicatorForm ), intent ( in ) :: &
-       Communicator
-     type ( CommunicatorForm ), intent ( in ), optional :: &
-       C_Option
-     character ( * ), intent ( in ), optional  :: &
-       NameOption
-     integer ( KDI ), dimension(:), allocatable, optional :: &
-      RanksOption   
-   end subroutine Create_Comm
+   
+   module procedure Create_L
+   !module subroutine Create_Comm ( Communicator, C_Option, NameOption, RanksOption )
+   ! implicit none
+   !  type ( CommunicatorForm ), intent ( in ) :: &
+   !    Communicator
+   !  type ( CommunicatorForm ), intent ( in ), optional :: &
+   !    C_Option
+   !  character ( * ), intent ( in ), optional  :: &
+   !    NameOption
+   !  integer ( KDI ), dimension(:), allocatable, optional :: &
+   !   RanksOption   
+   !end subroutine Create_Comm
 
  end interface Create
  
@@ -57,14 +58,8 @@ module LaplacianIsolated_FFT__Form
    module procedure Store_L  
  end interface Store
  
-interface Destroy
-  module subroutine Destroy_C ( Communicator, DestroyHandleOption ) 
-     implicit none
-     type ( CommunicatorForm ), intent ( in ) :: &
-       Communicator
-     logical ( KDL ), intent ( in ), optional :: &
-       DestroyHandleOption
-  end subroutine Destroy_C
+ interface Destroy
+  module procedure Destroy_L
 end interface Destroy
 
     private :: &
@@ -138,7 +133,7 @@ contains
     PW = L % PillarWidth
     PH = L % PillarHeight
     
-    allocate ( L % GreensFunction_Z (2*nCells(3), 2*PW(3), 2*PH(3)))
+    allocate ( L % GreensFunction_Z (2*nCells(3), 2*PW(3), 2*PH(3)) )
 
     call CreateCommunicators ( L, C, nCells, nRanksRoot )
 
@@ -181,9 +176,15 @@ contains
       ReceiveBuffer
     type ( CommunicatorForm ), pointer :: &
       C
-    
+    type ( CollectiveOperation_R_Form ), pointer :: & 
+      CO
+
     C => L % Communicator_X  
-    
+    !allocate ( L % Communicator_X )
+    !call L % Communicator_X % Initialize ( ) 
+
+    allocate ( CO )   
+ 
     nSources = size( L % InputOutput )
 
     if(nSources > 1) stop    
@@ -214,8 +215,11 @@ contains
       end do
     end do
     
-    call AllToAll(SendBuffer, C, ChunkSize, ReceiveBuffer)
-    
+    call CO % Initialize ( &
+                L % Communicator_X, SendBuffer, ReceiveBuffer )
+    !call AllToAll(SendBuffer, C, ChunkSize, ReceiveBuffer)
+    call CO % AllToAll ( )
+ 
     oBuffer = 0
     do iRank = 0, C%Size-1
       oData = iRank * L%nCellsBrick(1) 
@@ -228,8 +232,9 @@ contains
       end do
     end do
     
-    deallocate(SendBuffer)
-    deallocate(ReceiveBuffer)
+    deallocate ( SendBuffer )
+    deallocate ( ReceiveBuffer )
+    deallocate ( CO )
   
   end subroutine Load_L
   
@@ -254,9 +259,14 @@ contains
       ReceiveBuffer
     type ( CommunicatorForm ), pointer :: &
       C
+    type ( CollectiveOperation_R_Form ), pointer :: &
+     CO
     
-    C => L%Communicator_X  
-    
+    C => L % Communicator_X 
+    !allocate ( L % Communicator_X ) 
+    !call L % Communicator_X % Initialize ( ) 
+    allocate ( CO )
+
     nSolutions = size(L%InputOutput)
 
     if(nSolutions > 1) stop
@@ -282,9 +292,12 @@ contains
         oBuffer = oBuffer + ChunkSize / nSolutions
       end do
     end do
-    
-    call AllToAll(SendBuffer, C, ChunkSize, ReceiveBuffer)  
-    
+   
+    call CO % Initialize ( &
+               L % Communicator_X, SendBuffer, ReceiveBuffer )
+    !call AllToAll(SendBuffer, C, ChunkSize, ReceiveBuffer)  
+    call CO % AllToAll ( )
+
     oBuffer = 0
     do iRank = 0, C%Size-1
       oData = iRank * L%nCellsBrick(2) / C%Size 
@@ -298,9 +311,10 @@ contains
       end do
     end do
     
-    deallocate(SendBuffer)
-    deallocate(ReceiveBuffer)
-  
+    deallocate ( SendBuffer )
+    deallocate ( ReceiveBuffer )
+    deallocate ( CO )
+
   end subroutine Store_L
   
   
@@ -317,9 +331,9 @@ contains
       call Finalize(L%FFT_Forward(iDim))
     end do
     
-    call Destroy(L%Communicator_YZ)
-    call Destroy(L%Communicator_XY)
-    call Destroy(L%Communicator_X)
+    deallocate ( L % Communicator_YZ )
+    !deallocate ( L % Communicator_XY )
+    !deallocate ( L % Communicator_X )
     
     deallocate(L%GreensFunction_Z)
 
@@ -334,9 +348,9 @@ contains
     !   for the brick to pillar distribution (and vice-versa) and pillar 
     !   transpose in a slab.
 
-    type(LaplacianIsolated_FFT_Form), intent(inout) :: &
+    type(LaplacianIsolated_FFT_Form), pointer, intent(inout) :: &
       L
-    type(CommunicatorForm), intent(in) :: &
+    type( CommunicatorForm ), intent(in) :: &
       C
     integer(KDI), dimension(3), intent(in) :: &
       nCells
@@ -364,9 +378,13 @@ contains
     Pillar_X = BrickPosition_Y + BrickPosition_Z*nRanksRoot + 1
     Pillar_X_Rank &
       = (/(iRank, iRank = (Pillar_X-1)*nRanksRoot, Pillar_X*nRanksRoot - 1)/)
-    call Create( &
-           L%Communicator_X, C_Option=C, NameOption='Pillar_X', &
-           RanksOption=Pillar_X_Rank)
+     
+    allocate ( L )
+    !call L % Communicator_X % Initialize ( ) 
+    !call  Create( &
+    !       L%Communicator_X, C_Option=C, NameOption='Pillar_X', &
+    !       RanksOption=Pillar_X_Rank)
+    call L % Communicator_X % Initialize ( C, Pillar_X_Rank, NameOption = 'Pillar_X' )
     deallocate(Pillar_X_Rank)
     
     nRanksPerSlab_XY = nCells(2) / PW(1)
@@ -379,12 +397,15 @@ contains
       = (/(iRank, & 
            iRank = (Slab_XY-1)*nRanksPerSlab_XY,Slab_XY*nRanksPerSlab_XY - 1)/)
     Slab_YZ_Rank = (/(iRank, iRank = Slab_YZ-1, C%Size-1, nRanksPerSlab_XY)/)
-    call Create( &
-           L%Communicator_XY, C_Option=C, NameOption='Slab_XY', &
-           RanksOption=Slab_XY_Rank)
-    call Create( &
-           L%Communicator_YZ, C_Option=C, NameOption='Slab_YZ', &
-           RanksOption=Slab_YZ_Rank)
+    !call Create( &
+    !       L%Communicator_XY, C_Option=C, NameOption='Slab_XY', &
+    !       RanksOption=Slab_XY_Rank)
+    call L % Communicator_XY % Initialize ( C, [ Slab_XY_Rank ], NameOption='Slab_XY')
+    !call Create( &
+    !       L%Communicator_YZ, C_Option=C, NameOption='Slab_YZ', &
+    !       RanksOption=Slab_YZ_Rank)
+    call L % Communicator_YZ % Initialize ( C, [ Slab_YZ_Rank ], NameOption='Slab_YZ')
+
     deallocate(Slab_YZ_Rank)
     deallocate(Slab_XY_Rank)
     
