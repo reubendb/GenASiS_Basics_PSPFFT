@@ -2,141 +2,114 @@ program HomogeneousSpheroid_3D_Program
  
   use Basics
   use PSPFFT
-  !use IO
   
   implicit none
-  
-  !include 'mpif.h'
 
-  integer (KDI) :: &
+  integer ( KDI ) :: &
+    iVrbl, &
+    iSource, &
+    iNS, &   !-- iNumericalSolution
+    iAS, &   !-- iAnalyticalSolution
     Error, &
     nProcs, &
     nProcsRoot
-  integer (KDI), dimension(3) :: &
+  integer ( KDI ), dimension ( 3 ) :: &
     nTotalCells
-  real(KDR) :: &
+  real ( KDR ) :: &
     Pi, &
     GravitationalConstant = 1.0_KDR, &
     MyAnalyticalSum, MyDifferenceSum, &
     AnalyticalSum, DifferenceSum, &
     L1_Norm
-  real(KDR), dimension(3) :: &
+  real ( KDR ), dimension(3) :: &
     CellWidth
-  character(2) :: &
+  real ( KDR ), dimension ( :, :, : ), pointer :: &
+    SS_3D   !-- SourceSolution_3D
+  character ( 2 ) :: &
     nProcsString
-  character(LDL), dimension(3) :: &
-    VariableName
-  character(LDF) :: &
+  character ( LDF ) :: &
     DataDirectory
-  !type(IO_Form), pointer :: &
-  !  FileRead, &
-  !  FileWrite
-  !type(QuadMeshForm), pointer :: &
-  !  Mesh
-  !type(Real_3D_Form), dimension(3) :: &
-  !  AR
-  !type(VariableArrayReal_3D_GroupBase), dimension(1) :: &
-  !  VAR
-  !type(PSPFFT_Form), pointer :: &
-  !  PS
-  
-  !call MPI_INIT(Error)
-  
-  !call MPI_COMM_SIZE(MPI_COMM_WORLD, nProcs, Error)
-  !write(nProcsString, fmt='(i2)') nProcs
-  !nProcsRoot = nProcs**(1.0_KDR/3) + 0.5_KDR
+  type ( GridImageStreamForm ) :: &
+    GIS
+  type ( StructuredGridImageForm ) :: & 
+    SGI    
+  type ( Real_3D_Form ), dimension ( 3 ) :: &
+    R_3D
+  type ( PSPFFT_Form ), pointer :: &
+    PS
   
   allocate ( PROGRAM_HEADER )
   call PROGRAM_HEADER % Initialize ( 'HomogeneousSpheroid' )
   
-  write(nProcsString, fmt='(i2)') PROGRAM_HEADER % Communicator % Size
+  associate ( PH => PROGRAM_HEADER )
+  
+  nProcsRoot = PH % Communicator % Size ** ( 1.0_KDR / 3 ) + 0.5_KDR
+  write(nProcsString, fmt='(i2)') PH % Communicator % Size
   
   DataDirectory = 'Data/Data_'//trim(adjustl(nProcsString)) // 'proc/'
   
   call Show ( DataDirectory, 'DataDirectory' )
   
-  VariableName = (/'Source                        ', &
-                   'AnalyticalSolution            ', & 
-                   'NumericalSolution             '/)
+  call GIS % Initialize &
+         ( PH % Name, CommunicatorOption = PH % Communicator, &
+           WorkingDirectoryOption = DataDirectory )
+  call GIS % Open ( GIS % ACCESS_READ, NumberOption = 0 )
   
-!--  !-- VAR(1) uses AR as its storage, which at this point is unallocated 
-!--  call Initialize ( VAR(1), AR, VariableOption = VariableName )
-!--  
-!--  !-- Create IO objects read data file from, and write the solution to
-!--  call Create( &
-!--         FileRead, 'HomogeneousSpheroid_3D', MPI_COMM_Option = MPI_COMM_WORLD)
-!--  call Open( &
-!--         FileRead, FileRead%READ_ACCESS, &
-!--         WorkingDirectoryOption = trim(DataDirectory), NumberOption = 0)
-!--  call Create( &
-!--         FileWrite, 'HomogeneousSpheroid_3D', MPI_COMM_Option = MPI_COMM_WORLD)
-!--  call Open( &
-!--         FileWrite, FileWrite%WRITE_ACCESS, &
-!--         WorkingDirectoryOption = trim(DataDirectory), &
-!--         SeriesOption = .true., NumberOption = 1)
-!--  
-!--  !-- Create Mesh object then read mesh & variable. The mesh is uses VAR
-!--  !   to store its value (which in turns points to AR as the real storage) 
-!--  !   Storage in AR is allocated during the Read() method as requested by its 
-!--  !   last argument.
-!--  call Create(Mesh, VAR)
-!--  call Modify(Mesh, Directory = '/', Name = '')
-!--  call Read(Mesh, FileRead, AllocateStorageOption = .true.)
-!--  
-!--  !-- Copy the "Source" the "NumericalSolution" because our solver solves
-!--  !   the Poisson equation in-place:
-!--  !-- VAR(1)%Data(1)%Data is a rank 3 array with the index i,j,k
-!--  !   gives the value of the source on mesh grid i,j,k
-!--  
-!--  Pi = acos(-1.0_KDR)
-!--  VAR(1)%Data(3)%Data &
-!--    = VAR(1)%Data(1)%Data * 4.0_KDR * Pi * GravitationalConstant
-!--  
-!--  !-- Create Poisson Solver Object
-!--  CellWidth(1) = Mesh%NodeCoordinate_1(2) - Mesh%NodeCoordinate_1(1)
-!--  CellWidth(2) = Mesh%NodeCoordinate_2(2) - Mesh%NodeCoordinate_2(1)
-!--  CellWidth(3) = Mesh%NodeCoordinate_3(2) - Mesh%NodeCoordinate_3(1)
-!--  nTotalCells = Mesh%VariableArrayGroup_3D(1)%nData(1)%Data * nProcsRoot
-!--  call Create(PS, CellWidth,  nTotalCells, MPI_COMM_WORLD)
-!--  
-!--  !-- Solve the Poisson Equations with Solve() subroutine, passing an array
-!--  !   of sources as argument. Although currently only array of size 1 is 
-!--  !   supported, this is done for future compatibility where multiple sources 
-!--  !   may be solved at once. 
-!--  !   Source is replaced by Solution upon subroutine exit 
-!--  
-!--  call Solve(PS, VAR(1)%Data(3:3))
-!--  
-!--  !-- Calculate L1 norm of relative error between Analytical Solution
-!--  !-- and Numerical solution
-!--  
-!--  MyAnalyticalSum = sum(abs(VAR(1)%Data(2)%Data))
-!--  MyDifferenceSum = sum(abs(VAR(1)%Data(3)%Data - VAR(1)%Data(2)%Data))
-!--  call Reduce( &
-!--         MyAnalyticalSum, FileRead%Communicator, REDUCTION_SUM, 0, AnalyticalSum)
-!--  call Reduce( &
-!--         MyDifferenceSum, FileRead%Communicator, REDUCTION_SUM, 0, DifferenceSum)
-!--  L1_Norm = DifferenceSum / AnalyticalSum
-!--  call Show(L1_Norm, 'L1_Norm Error')
-!--  
-!--  !-- Write the mesh with the Solution (i.e. potential) for the source
-!--  
-!--  call Write(Mesh, FileWrite)
-!--  
-!--  !-- Cleanup
-!--  call Destroy(PS)
-!--  
-!--  call Destroy(Mesh)
-!--  
-!--  call Close(FileWrite)
-!--  call Destroy(FileWrite)
-!--  
-!--  call Close(FileRead)
-!--  call Destroy(FileRead)  
-!--  
-!--  call Finalize(VAR(1))
-!--  
-!--  call MPI_FINALIZE(Error)
+  call SGI % Initialize ( GIS )
+  call SGI % Read ( )
+  
+  call GIS % Close ( )
+  
+  associate ( S => SGI % Storage ( 1 ) )
+  do iVrbl = 1, S % nVariables
+    if ( trim ( S % Variable ( iVrbl ) ) == 'Source' ) &
+      iSource = iVrbl
+    if ( trim ( S % Variable ( iVrbl ) ) == 'NumericalSolution' ) &
+      iNS = iVrbl
+    if ( trim ( S % Variable ( iVrbl ) ) == 'AnalyticalSolution' ) &
+      iAS = iVrbl
+  end do
+  
+  S % Value ( :, iNS ) &
+    = S % Value ( :, iSource ) &
+        * 4.0_KDR * CONSTANT % PI * CONSTANT % GRAVITATIONAL
+  
+  CellWidth ( 1 ) = SGI % NodeCoordinate_1 ( 2 ) - SGI % NodeCoordinate_1 ( 1 )
+  CellWidth ( 2 ) = SGI % NodeCoordinate_2 ( 2 ) - SGI % NodeCoordinate_2 ( 1 )
+  CellWidth ( 3 ) = SGI % NodeCoordinate_3 ( 2 ) - SGI % NodeCoordinate_3 ( 1 )
+  
+  !-- Rank-remaaped S % Value to 3D, then copy it to R_3D % Value
+  SS_3D ( 1 : SGI % nCells ( 1 ), &
+          1 : SGI % nCells ( 2 ), &
+          1 : SGI % nCells ( 3 ) ) => S % Value ( :, iNS )
+          
+  call R_3D ( 3 ) % Initialize ( SGI % nCells )
+  call Copy ( SS_3D, R_3D ( 3 ) % Value )
+
+  nTotalCells = SGI % nCells * nProcsRoot
+  
+  !-- FIXME: This needs the ported version to work
+  !-- call Create ( PS, CellWidth, nTotalCells, PH % Communicator % Handle )
+  !-- call Solve ( PS, R_3D ( 3 : 3 ) )
+  
+  !-- Copy back the solution
+  call Copy ( R_3D ( 3 ) % Value, SS_3D )
+  
+  !-- Calculate L1 norm of relative error between Analytical and Numerical
+  !-- Solution
+  MyAnalyticalSum = sum ( abs ( S % Value ( :, iAS ) ) )
+  MyDifferenceSum = sum ( abs ( S % Value ( :, iNS ) &
+                                -  S % Value ( :, iAS ) ) )
+  !-- FIXME: NEED REDUCTION for MultiProc
+  AnalyticalSum = MyAnalyticalSum
+  DifferenceSum = MyDifferenceSum
+  L1_Norm = DifferenceSum / AnalyticalSum
+  
+  call Show ( L1_Norm, 'L1_Norm Error' )
+  
+  end associate   !-- S
+  
+  end associate   !-- PH
 
   deallocate ( PROGRAM_HEADER )
   
