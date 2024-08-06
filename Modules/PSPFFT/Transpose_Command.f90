@@ -47,7 +47,8 @@ contains
       ReceiveBuffer
     
     type ( CollectiveOperation_C_Form ), pointer :: &
-      CO_C
+     CO_C
+    
     !-- Pillars have their full dimension as the first index so transpose
     !-- becomes a permutation
     
@@ -68,7 +69,7 @@ contains
     end if
     
     allocate(TargetPillar(TargetShape(1),TargetShape(2),TargetShape(3)))
-    call Clear(TargetPillar)
+    !call Clear(TargetPillar)
     
     if(Forward)then
       ChunkSize = product(SourceShape) / C%Size 
@@ -108,10 +109,12 @@ contains
 
     end do
     
-    ! CO_C % Outgoing % Value & 
+    !CO_C % Outgoing % Value & 
     !    = spread ( SendBuffer, dim = 3, ncopies = ChunkSize )
-    call CO_C % AllToAll ( )  
-    ! call AllToAll(SendBuffer, C, ChunkSize, ReceiveBuffer)
+    
+   call CO_C % AllToAll ( )  
+    
+   !OLD -- call AllToAll(SendBuffer, C, ChunkSize, ReceiveBuffer)
     
     if(Forward)then
       iBuffer = 0

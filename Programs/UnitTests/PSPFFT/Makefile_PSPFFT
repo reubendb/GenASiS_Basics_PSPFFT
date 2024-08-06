@@ -5,11 +5,11 @@ include $(PATH_GENASIS)/Build/Makefile_Build
 all: \
   Transpose_Command_Test 
 
-Transpose_Command_Test: PSPFFT.a Basics.a Transpose_Command_Test.o Transpose_Command.o
+Transpose_Command_Test: Basics.a PSPFFT.a Transpose_Command_Test.o Transpose_Command.o
 	$(LINK) $(FLAGS) \
 					-o Transpose_Command_Test_$(MACHINE) \
 					Transpose_Command_Test.o Transpose_Command.o \
-          PSPFFT.a Basics.a
+          Basics.a PSPFFT.a $(LIBRARIES)
 
 clean:
 	rm -f *.o *.a *.mod *.ld
