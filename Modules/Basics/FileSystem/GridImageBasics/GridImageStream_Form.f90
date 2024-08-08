@@ -311,7 +311,12 @@ contains
     end if
    
     if ( allocated ( GIS % ContentList ) ) deallocate ( GIS % ContentList )  
-    allocate ( GIS % ContentList ( nContents ) )
+    
+    if ( trim ( ContentType ) == 'Directory' ) then
+      allocate ( GIS % ContentList ( 1 + nContents ) )
+    else
+      allocate ( GIS % ContentList ( nContents ) )
+    end if
        
     do iC = 1, nContents
       call c_f_pointer ( StringArray ( iC ), Buffer )
@@ -321,6 +326,8 @@ contains
       end do
       GIS % ContentList ( iC ) = Buffer ( 1 : iCh - 1 )
     end do
+    if ( trim ( ContentType ) == 'Directory' ) &
+      GIS % ContentList ( nContents + 1 ) = '.'
 
     call Show &
            ( GIS % ContentList, 'List of ' // trim ( ContentType ), &
