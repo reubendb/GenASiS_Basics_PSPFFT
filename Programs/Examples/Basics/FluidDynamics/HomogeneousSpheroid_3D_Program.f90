@@ -89,8 +89,13 @@ program HomogeneousSpheroid_3D_Program
   nTotalCells = SGI % nCells * nProcsRoot
   
   !-- FIXME: This needs the ported version to work
-  !-- call Create ( PS, CellWidth, nTotalCells, PH % Communicator % Handle )
-  !-- call Solve ( PS, R_3D ( 3 : 3 ) )
+  
+  call Create ( PS, CellWidth, nTotalCells, PH % Communicator % Handle, &
+                'INFO_5' )
+  
+  call Show ( R_3D ( 3 ) % Value ( 1 : 10, 5 : 10, 13 : 14 ), '<<<< Source ' )
+  call Solve ( PS, R_3D ( 3 : 3 ) )
+  call Show ( R_3D ( 3 ) % Value ( 1 : 10, 5 : 10,  13 : 14  ), '<<<< Solution ' )
   
   !-- Copy back the solution
   call Copy ( R_3D ( 3 ) % Value, SS_3D )

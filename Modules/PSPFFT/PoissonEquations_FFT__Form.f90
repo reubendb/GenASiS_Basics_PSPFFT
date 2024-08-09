@@ -59,7 +59,8 @@ contains
       Verbosity
     
     allocate ( PE )
-    call PE % Communicator % Initialize ( ) 
+    PE % Communicator => PROGRAM_HEADER % Communicator
+    !call PE % Communicator % Initialize ( ) 
     !call Create ( PE % Communicator, MPI_COMM, 'PSPFFT_Communicator' )
     
     Verbosity = 'INFO_1'
@@ -145,7 +146,8 @@ contains
     type ( PoissonEquations_FFT_Form ), pointer :: &
       PE
     
-    !deallocate ( PE % Laplacian )
+    call Destroy ( PE % Laplacian )
+    nullify ( PE % Communicator )
     !deallocate ( PE % Communicator )
     deallocate ( PE )
   

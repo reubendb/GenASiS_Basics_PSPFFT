@@ -46,7 +46,7 @@ contains
       SendBuffer, &
       ReceiveBuffer
     
-    type ( CollectiveOperation_C_Form ), pointer :: &
+    type ( CollectiveOperation_C_Form ), allocatable :: &
      CO_C
     
     !-- Pillars have their full dimension as the first index so transpose
@@ -69,7 +69,10 @@ contains
     end if
     
     allocate(TargetPillar(TargetShape(1),TargetShape(2),TargetShape(3)))
+    
+    !-- FIXME: Needs Clear_Command
     !call Clear(TargetPillar)
+    TargetPillar = ( 0.0_KDR, 0.0_KDR )
     
     if(Forward)then
       ChunkSize = product(SourceShape) / C%Size 
@@ -79,8 +82,9 @@ contains
       HeightFactor = 2
     end if
      
-    call CO_C % Initialize &
-              ( C, nOutgoing = [ ChunkSize ], nIncoming = [ ChunkSize ] )
+    !call CO_C % Initialize &
+    !          ( C, nOutgoing = [ ChunkSize ], nIncoming = [ ChunkSize ] )
+    call CO_C % Initialize ( C, SendBuffer, ReceiveBuffer )
 
     do iRank = 0, C%Size-1
 
@@ -163,7 +167,7 @@ contains
     
     deallocate(SendBuffer)
     deallocate(ReceiveBuffer)
-    !deallocate ( CO_R )
+    deallocate ( CO_C )
 
     !-- TargetPillar as result array is automatically deallocated 
     
